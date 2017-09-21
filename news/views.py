@@ -20,10 +20,10 @@ def get_news(request):
         news_count = int(news_count)
     else:
         news_count = 20
-        
+
     before_pub_date = datetime.strptime(before_pub_date, "%Y-%m-%d %H:%M:%S")
 
-    news_list = News.objects.filter(pub_date__lte=before_pub_date)[:news_count]
+    news_list = News.objects.filter(pub_date__lte=before_pub_date).order_by('-pub_date')[:news_count]
     items = []
     for news in news_list:
         items.append(model_to_dict(news))
