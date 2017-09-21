@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from .models import News
 from datetime import datetime
 from django.core import serializers
+import json
+from django.forms.models import model_to_dict
 
 
 def index(request):
@@ -16,6 +18,11 @@ def get_news(request):
     before_pub_date = datetime.strptime(before_pub_date, "%Y-%m-%d %H:%M:%S")
 
     news_list = News.objects.filter(pub_date__lte=before_pub_date)[:20]
+    items = []
+    for news in news_list:
+        items.append(model_to_dict(news))
+        
+    data = {}
+    data['items'] = items
 
-    data = serializers.serialize('json', news_list)
     return JsonResponse(data, safe=False)

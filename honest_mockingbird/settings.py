@@ -25,7 +25,7 @@ SECRET_KEY = 'pg*clmmxl1(_i0m(vt*sz^x)drycyj4lx8nhnw-etawcp@2wqq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.241.147.78']
+ALLOWED_HOSTS = ['192.241.147.78', 'localhost']
 
 
 # Application definition
