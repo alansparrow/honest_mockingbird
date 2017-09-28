@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from .models import News
 from .models import User
 from .models import TradeVote
+from .models import FactOpinionVote
 from datetime import datetime
 from django.core import serializers
 import json
@@ -29,6 +30,82 @@ def create_user(request):
         new_user = User(token = User.create_token())
         new_user.save()
         return_data['new_user'] = model_to_dict(new_user)
+
+    return JsonResponse(return_data, safe=False)
+
+@csrf_exempt
+def vote_fact(request):
+    return_data = {}
+
+    if (request.method == 'POST'):
+        user_token = request.POST['user_token']
+        news_id = request.POST['news_id']
+
+        user = User.get(token=user_token)
+        news = News.get(news_id=news_id)
+
+        if (user == None or news == None):
+            return_data['result_code'] = 1
+            return_data['message'] = 'user or news not found'
+            return_data['user'] = None
+            return_data['news'] = None
+        else:
+            return_data['result_code'] = 0
+            return_data['message'] = 'ok'
+            vote = FactOpinionVote.get(user_token=user_token, news_id=news_id)
+
+            if (vote != None):
+                if (vote.vote_type != SharedInfo.FACT):
+                    if (vote.vote_type == SharedInfo.OPINION):
+                        News.vote_opinion(news.id, -1)
+                    News.vote_fact(news.id, 1)
+                    vote.vote_type = SharedInfo.FACT
+                    vote.save()
+                else:
+                    News.vote_fact(news.id, -1)
+                    vote.delete()
+            else:
+                News.vote_fact(news.id, 1)
+                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.FACT)
+                vote.save()
+
+    return JsonResponse(return_data, safe=False)
+
+@csrf_exempt
+def vote_opinion(request):
+    return_data = {}
+
+    if (request.method == 'POST'):
+        user_token = request.POST['user_token']
+        news_id = request.POST['news_id']
+
+        user = User.get(token=user_token)
+        news = News.get(news_id=news_id)
+
+        if (user == None or news == None):
+            return_data['result_code'] = 1
+            return_data['message'] = 'user or news not found'
+            return_data['user'] = None
+            return_data['news'] = None
+        else:
+            return_data['result_code'] = 0
+            return_data['message'] = 'ok'
+            vote = FactOpinionVote.get(user_token=user_token, news_id=news_id)
+
+            if (vote != None):
+                if (vote.vote_type != SharedInfo.OPINION):
+                    if (vote.vote_type == SharedInfo.FACT):
+                        News.vote_fact(news.id, -1)
+                    News.vote_opinion(news.id, 1)
+                    vote.vote_type = SharedInfo.OPINION
+                    vote.save()
+                else:
+                    News.vote_opinion(news.id, -1)
+                    vote.delete()
+            else:
+                News.vote_opinion(news.id, 1)
+                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.OPINION)
+                vote.save()
 
     return JsonResponse(return_data, safe=False)
 
