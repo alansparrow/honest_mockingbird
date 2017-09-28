@@ -64,8 +64,7 @@ def vote_hold(request):
                     vote.save()
                 else:
                     News.vote_hold(news.id, -1)
-                    vote.vote_type = SharedInfo.HOLD_VOTE_TYPE
-                    vote.save()
+                    vote.delete()
             else:
                 News.vote_hold(news.id, 1)
                 vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.HOLD_VOTE_TYPE)
@@ -106,8 +105,7 @@ def vote_buy(request):
                     vote.save()
                 else:
                     News.vote_buy(news.id, -1)
-                    vote.vote_type = SharedInfo.BUY_VOTE_TYPE
-                    vote.save()
+                    vote.delete()
             else:
                 News.vote_buy(news.id, 1)
                 vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.BUY_VOTE_TYPE)
@@ -147,8 +145,7 @@ def vote_sell(request):
                     vote.save()
                 else:
                     News.vote_sell(news.id, -1)
-                    vote.vote_type = SharedInfo.SELL_VOTE_TYPE
-                    vote.save()
+                    vote.delete()
             else:
                 News.vote_sell(news.id, 1)
                 vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.SELL_VOTE_TYPE)
