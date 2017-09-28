@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from .models import News
 from .models import User
-from .models import Vote
+from .models import TradeVote
 from datetime import datetime
 from django.core import serializers
 import json
@@ -51,7 +51,7 @@ def vote_hold(request):
         else:
             return_data['result_code'] = 0
             return_data['message'] = 'ok'
-            vote = Vote.get(user_token=user_token, news_id=news_id)
+            vote = TradeVote.get(user_token=user_token, news_id=news_id)
 
             if (vote != None):
                 if (vote.vote_type != SharedInfo.HOLD_VOTE_TYPE):
@@ -67,7 +67,7 @@ def vote_hold(request):
                     vote.delete()
             else:
                 News.vote_hold(news.id, 1)
-                vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.HOLD_VOTE_TYPE)
+                vote = TradeVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.HOLD_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)
@@ -92,7 +92,7 @@ def vote_buy(request):
         else:
             return_data['result_code'] = 0
             return_data['message'] = 'ok'
-            vote = Vote.get(user_token=user_token, news_id=news_id)
+            vote = TradeVote.get(user_token=user_token, news_id=news_id)
 
             if (vote != None):
                 if (vote.vote_type != SharedInfo.BUY_VOTE_TYPE):
@@ -108,7 +108,7 @@ def vote_buy(request):
                     vote.delete()
             else:
                 News.vote_buy(news.id, 1)
-                vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.BUY_VOTE_TYPE)
+                vote = TradeVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.BUY_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)
@@ -132,7 +132,7 @@ def vote_sell(request):
         else:
             return_data['result_code'] = 0
             return_data['message'] = 'ok'
-            vote = Vote.get(user_token=user_token, news_id=news_id)
+            vote = TradeVote.get(user_token=user_token, news_id=news_id)
 
             if (vote != None):
                 if (vote.vote_type != SharedInfo.SELL_VOTE_TYPE):
@@ -148,7 +148,7 @@ def vote_sell(request):
                     vote.delete()
             else:
                 News.vote_sell(news.id, 1)
-                vote = Vote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.SELL_VOTE_TYPE)
+                vote = TradeVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.SELL_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)

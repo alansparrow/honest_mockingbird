@@ -2,13 +2,35 @@ from django.db import models
 import logging
 import hashlib
 import uuid
+from .shared_info import SharedInfo
 # Create your models here.
 
-class Vote(models.Model):
+class FactOpinionVote(models.Model):
     news_id = models.TextField()
     user_token = models.TextField()
     fingerprint = models.TextField()
-    vote_type = models.TextField(default='neutral')   # 'neutral', 'hold', 'buy', 'sell'
+    vote_type = models.TextField(default=SharedInfo.NEUTRAL)
+
+    def __str__(self):
+        return str(self.id) + '   ' + self.news_id + '   ' + \
+                    self.user_token + '   ' + self.fingerprint + '   ' + self.vote_type
+
+    @classmethod
+    def get(cls, user_token, news_id):
+        result = None
+        try:
+            result = cls.objects.get(user_token=user_token, news_id=news_id)
+        except (cls.DoesNotExist, cls.MultipleObjectsReturned) as e:
+            print(e)
+            result = None
+
+        return result
+
+class TradeVote(models.Model):
+    news_id = models.TextField()
+    user_token = models.TextField()
+    fingerprint = models.TextField()
+    vote_type = models.TextField(default=SharedInfo.NEUTRAL_VOTE_TYPE)   # 'neutral', 'hold', 'buy', 'sell'
 
     def __str__(self):
         return str(self.id) + '   ' + self.news_id + '   ' + \
@@ -55,9 +77,41 @@ class News(models.Model):
     buy_vote_count = models.IntegerField(default=0)
     sell_vote_count = models.IntegerField(default=0)
     hold_vote_count = models.IntegerField(default=0)
+    fact_vote_count = models.IntegerField(default=0)
+    opinion_vote_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
+
+    @classmethod
+    def vote_fact(cls, news_id, vote_count):
+        news = cls.get(news_id)
+        if (news == None):
+            return news
+
+        # vote_count = (1 | -1)
+        news.fact_vote_count += vote_count
+        if (news.fact_vote_count < 0):
+            news.fact_vote_count = 0
+
+        news.save()
+
+        return news
+
+    @classmethod
+    def vote_opinion(cls, news_id, vote_count):
+        news = cls.get(news_id)
+        if (news == None):
+            return news
+
+        # vote_count = (1 | -1)
+        news.opinion_vote_count += vote_count
+        if (news.opinion_vote_count < 0):
+            news.opinion_vote_count = 0
+
+        news.save()
+
+        return news
 
     @classmethod
     def vote_hold(cls, news_id, vote_count):
