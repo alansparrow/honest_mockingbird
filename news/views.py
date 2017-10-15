@@ -7,6 +7,7 @@ from .models import News
 from .models import User
 from .models import TradeVote
 from .models import FactOpinionVote
+from .models import UpDownVote
 from datetime import datetime
 from django.core import serializers
 import json
@@ -55,18 +56,18 @@ def vote_fact(request):
             vote = FactOpinionVote.get(user_token=user_token, news_id=news_id)
 
             if (vote != None):
-                if (vote.vote_type != SharedInfo.FACT):
-                    if (vote.vote_type == SharedInfo.OPINION):
+                if (vote.vote_type != SharedInfo.FACT_VOTE_TYPE):
+                    if (vote.vote_type == SharedInfo.OPINION_VOTE_TYPE):
                         News.vote_opinion(news.id, -1)
                     News.vote_fact(news.id, 1)
-                    vote.vote_type = SharedInfo.FACT
+                    vote.vote_type = SharedInfo.FACT_VOTE_TYPE
                     vote.save()
                 else:
                     News.vote_fact(news.id, -1)
                     vote.delete()
             else:
                 News.vote_fact(news.id, 1)
-                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.FACT)
+                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.FACT_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)
@@ -93,18 +94,18 @@ def vote_opinion(request):
             vote = FactOpinionVote.get(user_token=user_token, news_id=news_id)
 
             if (vote != None):
-                if (vote.vote_type != SharedInfo.OPINION):
-                    if (vote.vote_type == SharedInfo.FACT):
+                if (vote.vote_type != SharedInfo.OPINION_VOTE_TYPE):
+                    if (vote.vote_type == SharedInfo.FACT_VOTE_TYPE):
                         News.vote_fact(news.id, -1)
                     News.vote_opinion(news.id, 1)
-                    vote.vote_type = SharedInfo.OPINION
+                    vote.vote_type = SharedInfo.OPINION_VOTE_TYPE
                     vote.save()
                 else:
                     News.vote_opinion(news.id, -1)
                     vote.delete()
             else:
                 News.vote_opinion(news.id, 1)
-                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.OPINION)
+                vote = FactOpinionVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.OPINION_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)
@@ -226,6 +227,84 @@ def vote_sell(request):
             else:
                 News.vote_sell(news.id, 1)
                 vote = TradeVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.SELL_VOTE_TYPE)
+                vote.save()
+
+    return JsonResponse(return_data, safe=False)
+
+
+# Up Down Vote
+@csrf_exempt
+def vote_up(request):
+    return_data = {}
+
+    if (request.method == 'POST'):
+        user_token = request.POST['user_token']
+        news_id = request.POST['news_id']
+
+        user = User.get(token=user_token)
+        news = News.get(news_id=news_id)
+
+        if (user == None or news == None):
+            return_data['result_code'] = 1
+            return_data['message'] = 'user or news not found'
+            return_data['user'] = None
+            return_data['news'] = None
+        else:
+            return_data['result_code'] = 0
+            return_data['message'] = 'ok'
+            vote = UpDownVote.get(user_token=user_token, news_id=news_id)
+
+            if (vote != None):
+                if (vote.vote_type != SharedInfo.UP_VOTE_TYPE):
+                    if (vote.vote_type == SharedInfo.DOWN_VOTE_TYPE):
+                        News.vote_down(news.id, -1)
+                    News.vote_up(news.id, 1)
+                    vote.vote_type = SharedInfo.UP_VOTE_TYPE
+                    vote.save()
+                else:
+                    News.vote_up(news.id, -1)
+                    vote.delete()
+            else:
+                News.vote_up(news.id, 1)
+                vote = UpDownVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.UP_VOTE_TYPE)
+                vote.save()
+
+    return JsonResponse(return_data, safe=False)
+
+@csrf_exempt
+def vote_down(request):
+    return_data = {}
+
+    if (request.method == 'POST'):
+        user_token = request.POST['user_token']
+        news_id = request.POST['news_id']
+
+        user = User.get(token=user_token)
+        news = News.get(news_id=news_id)
+
+        if (user == None or news == None):
+            return_data['result_code'] = 1
+            return_data['message'] = 'user or news not found'
+            return_data['user'] = None
+            return_data['news'] = None
+        else:
+            return_data['result_code'] = 0
+            return_data['message'] = 'ok'
+            vote = UpDownVote.get(user_token=user_token, news_id=news_id)
+
+            if (vote != None):
+                if (vote.vote_type != SharedInfo.DOWN_VOTE_TYPE):
+                    if (vote.vote_type == SharedInfo.UP_VOTE_TYPE):
+                        News.vote_up(news.id, -1)
+                    News.vote_down(news.id, 1)
+                    vote.vote_type = SharedInfo.DOWN_VOTE_TYPE
+                    vote.save()
+                else:
+                    News.vote_down(news.id, -1)
+                    vote.delete()
+            else:
+                News.vote_down(news.id, 1)
+                vote = UpDownVote(user_token=user_token, news_id=news_id, vote_type=SharedInfo.DOWN_VOTE_TYPE)
                 vote.save()
 
     return JsonResponse(return_data, safe=False)

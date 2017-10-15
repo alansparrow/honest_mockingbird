@@ -3,6 +3,7 @@ import logging
 import hashlib
 import uuid
 from .shared_info import SharedInfo
+from datetime import datetime
 # Create your models here.
 
 class FactOpinionVote(models.Model):
@@ -47,6 +48,27 @@ class TradeVote(models.Model):
 
         return result
 
+class UpDownVote(models.Model):
+    news_id = models.TextField()
+    user_token = models.TextField()
+    fingerprint = models.TextField()
+    vote_type = models.TextField(default=SharedInfo.NEUTRAL)
+
+    def __str__(self):
+        return str(self.id) + '   ' + self.news_id + '   ' + \
+                    self.user_token + '   ' + self.fingerprint + '   ' + self.vote_type
+
+    @classmethod
+    def get(cls, user_token, news_id):
+        result = None
+        try:
+            result = cls.objects.get(user_token=user_token, news_id=news_id)
+        except (cls.DoesNotExist, cls.MultipleObjectsReturned) as e:
+            print(e)
+            result = None
+
+        return result
+
 class User(models.Model):
     token = models.TextField()
 
@@ -69,6 +91,9 @@ class User(models.Model):
         return str(uuid.uuid4())
 
 class News(models.Model):
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+
     title = models.TextField()
     url = models.TextField()
     pub_date = models.DateTimeField()
@@ -79,6 +104,9 @@ class News(models.Model):
     hold_vote_count = models.IntegerField(default=0)
     fact_vote_count = models.IntegerField(default=0)
     opinion_vote_count = models.IntegerField(default=0)
+    up_vote_count = models.IntegerField(default=0)
+    down_vote_count = models.IntegerField(default=0)
+    score = models.FloatField(default=0.0)
 
     def __str__(self):
         return self.title
@@ -154,6 +182,58 @@ class News(models.Model):
         if (news.sell_vote_count < 0):
             news.sell_vote_count = 0
         
+        news.save()
+
+        return news
+
+
+    # calculate score
+    @classmethod
+    def cal_score(cls, news):
+        if (news == None):
+            return 0.0
+
+        up_down_diff = news.up_vote_count - news.down_vote_count
+        time_diff = (datetime.utcnow() - news.pub_date.replace(tzinfo=None)).total_seconds() / 3600
+        score = 0.0
+        if (up_down_diff - 1 > 0):
+            score = (up_down_diff - 1) / ((time_diff + 2) ** SharedInfo.SCORE_GRAVITY)
+        else:
+            score = (up_down_diff - 1) * ((time_diff + 2) ** SharedInfo.SCORE_GRAVITY)
+
+        return score
+
+
+
+
+    @classmethod
+    def vote_up(cls, news_id, vote_count):
+        news = cls.get(news_id)
+        if (news == None):
+            return news
+
+        # vote_count = (1 | -1)
+        news.up_vote_count += vote_count
+        if (news.up_vote_count < 0):
+            news.up_vote_count = 0
+
+        news.score = cls.cal_score(news)
+        news.save()
+
+        return news
+
+    @classmethod
+    def vote_down(cls, news_id, vote_count):
+        news = cls.get(news_id)
+        if (news == None):
+            return news
+
+        # vote_count = (1 | -1)
+        news.down_vote_count += vote_count
+        if (news.down_vote_count < 0):
+            news.down_vote_count = 0
+
+        news.score = cls.cal_score(news)
         news.save()
 
         return news

@@ -25,7 +25,7 @@ SECRET_KEY = 'pg*clmmxl1(_i0m(vt*sz^x)drycyj4lx8nhnw-etawcp@2wqq'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.241.147.78', 'localhost']
+ALLOWED_HOSTS = ['192.241.147.78', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'news_spider',
         'USER': 'baotrungtn',
         'PASSWORD': 'baotrung',
-        'HOST': '127.0.0.1',
+        'HOST': '192.241.147.78',
         'PORT': '5432',
     }
 }

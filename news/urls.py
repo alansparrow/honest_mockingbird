@@ -10,5 +10,7 @@ urlpatterns = [
     url(r'^vote/buy$', views.vote_buy),
     url(r'^vote/sell$', views.vote_sell),
     url(r'^vote/fact$', views.vote_fact),
-    url(r'^vote/opinion$', views.vote_opinion)
+    url(r'^vote/opinion$', views.vote_opinion),
+    url(r'^vote/up$', views.vote_up),
+    url(r'^vote/down$', views.vote_down)
 ]
