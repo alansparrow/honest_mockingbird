@@ -17,11 +17,13 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
 from .shared_info import SharedInfo
+import random
 
 
-
+# for making fake news
 def index(request):
-    return HttpResponse("Hello, world. You're at the news index.")
+    rand = random.uniform(0.1, 0.2)
+    return HttpResponse("Hello, world. You're at the news index. " + str(rand))
 
 @csrf_exempt
 def create_user(request):
@@ -308,7 +310,8 @@ def vote_down(request):
                 vote.save()
 
     return JsonResponse(return_data, safe=False)
-    
+
+@csrf_exempt
 def get_news_new(request):
     return_data = {}
 
@@ -332,6 +335,7 @@ def get_news_new(request):
 
     return JsonResponse(return_data, safe=False)
 
+@csrf_exempt
 def get_news_hot(request):
     return_data = {}
 

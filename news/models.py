@@ -197,14 +197,14 @@ class News(models.Model):
         up_down_diff = news.up_vote_count - news.down_vote_count
         time_diff = (datetime.utcnow() - news.pub_date.replace(tzinfo=None)).total_seconds() / 3600
         score = 0.0
-        noise = random(0.1, 0.2)
+        noise = random.uniform(0.1, 0.2)
         if (up_down_diff - 1 > 0):
             score = (up_down_diff - 1) / ((time_diff + 2) ** SharedInfo.SCORE_GRAVITY)
         else:
             score = (up_down_diff - 1) * ((time_diff + 2) ** SharedInfo.SCORE_GRAVITY)
 
         score += noise
-        
+
         return score
 
 
