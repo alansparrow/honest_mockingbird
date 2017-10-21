@@ -309,7 +309,7 @@ def vote_down(request):
 
     return JsonResponse(return_data, safe=False)
     
-def get_news(request):
+def get_news_new(request):
     return_data = {}
 
     if (request.method == 'GET'):
@@ -323,6 +323,28 @@ def get_news(request):
         before_pub_date = datetime.strptime(before_pub_date, "%Y-%m-%d %H:%M:%S")
 
         news_list = News.objects.filter(pub_date__lt=before_pub_date).order_by('-pub_date')[:news_count]
+        items = []
+        for news in news_list:
+            items.append(model_to_dict(news))
+
+
+        return_data['items'] = items
+
+    return JsonResponse(return_data, safe=False)
+
+def get_news_hot(request):
+    return_data = {}
+
+    if (request.method == 'GET'):
+        score = request.GET['score']
+        news_count = request.GET['news_count']
+        if (news_count.isdigit()):
+            news_count = int(news_count)
+        else:
+            news_count = 20
+
+
+        news_list = News.objects.filter(score__lt=score).order_by('-score', '-pub_date')[:news_count]
         items = []
         for news in news_list:
             items.append(model_to_dict(news))
